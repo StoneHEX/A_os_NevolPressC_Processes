@@ -87,16 +87,19 @@ uint8_t		led_counter=0;
 
 		if (( wakeup & WAKEUP_FROM_UART2_IRQ) == WAKEUP_FROM_UART2_IRQ)
 		{
-			if ( parse_packet(NevolSystem.rs485_rx_buf) )
+			if (( flags & WAKEUP_FLAGS_UART_RX) == WAKEUP_FLAGS_UART_RX)
 			{
-				System_Process_host_Commands();
-				hw_send_uart(HW_UART2,NevolSystem.system_tx_buf, NevolSystem.system_tx_buf_len);
+				if ( parse_packet(NevolSystem.rs485_rx_buf) )
+				{
+					System_Process_host_Commands();
+					hw_send_uart(HW_UART2,NevolSystem.system_tx_buf, NevolSystem.system_tx_buf_len);
+				}
 			}
 		}
 
 		if (( wakeup & WAKEUP_FROM_ADC2_IRQ) == WAKEUP_FROM_ADC2_IRQ)
 		{
-			adc_data = (uint16_t )flags;
+			NevolSystem.adc_data = (uint16_t )flags;
 		}
 	}
 }

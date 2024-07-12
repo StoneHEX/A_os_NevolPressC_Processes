@@ -102,13 +102,21 @@ NevolSystemGPIO_TypeDef	NevolSystemGPIO[16] =
 void line_set(uint8_t line_num , uint8_t line_state)
 {
 	if ( line_state == 0 )
+	{
+		NevolSystem.line_status &= ~line_num;
 		HAL_GPIO_WritePin(NevolSystemGPIO[line_num-1].GPIOx,  NevolSystemGPIO[line_num-1].GPIO_Pin,GPIO_PIN_RESET);
+	}
 	else
+	{
+		NevolSystem.line_status |= line_num;
 		HAL_GPIO_WritePin(NevolSystemGPIO[line_num-1].GPIOx,  NevolSystemGPIO[line_num-1].GPIO_Pin,GPIO_PIN_SET);
+	}
 }
 void line_reset(void)
 {
 uint8_t	i;
+	NevolSystem.line_status = 0;
+	NevolSystem.motor_status = 0;
 	for(i=0;i<16;i++)
 		HAL_GPIO_WritePin(NevolSystemGPIO[i].GPIOx,  NevolSystemGPIO[i].GPIO_Pin,GPIO_PIN_RESET);
 }
@@ -120,25 +128,37 @@ void heater_set(uint8_t heater_num,uint8_t duty)
 {
 	switch(heater_num)
 	{
-	case 1 : TIM2->CCR1 = CCR_VAL_UNIT * duty;break;
-	case 2 : TIM3->CCR4 = CCR_VAL_UNIT * duty;break;
-	case 3 : TIM3->CCR3 = CCR_VAL_UNIT * duty;break;
-	case 4 : TIM3->CCR2 = CCR_VAL_UNIT * duty;break;
-	case 5 : TIM3->CCR1 = CCR_VAL_UNIT * duty;break;
+	case 1 : TIM2->CCR1 = CCR_VAL_UNIT * duty;NevolSystem.htr1_period=duty;break;
+	case 2 : TIM3->CCR4 = CCR_VAL_UNIT * duty;NevolSystem.htr2_period=duty;break;
+	case 3 : TIM3->CCR3 = CCR_VAL_UNIT * duty;NevolSystem.htr3_period=duty;break;
+	case 4 : TIM3->CCR2 = CCR_VAL_UNIT * duty;NevolSystem.htr4_period=duty;break;
+	case 5 : TIM3->CCR1 = CCR_VAL_UNIT * duty;NevolSystem.htr5_period=duty;break;
 	}
 }
 
 void heater_reset(void)
 {
 	TIM2->CCR1 = TIM3->CCR4 = TIM3->CCR3 = TIM3->CCR2 = TIM3->CCR1 = 0;
+	NevolSystem.htr1_period=NevolSystem.htr2_period=NevolSystem.htr3_period=NevolSystem.htr4_period=NevolSystem.htr5_period=0;
+}
+
+void heater_prescaler_set(uint16_t prescaler)
+{
+	TIM2->PSC = TIM3->PSC = prescaler;
 }
 
 void motor_set(uint8_t motor_state)
 {
 	if ( motor_state )
+	{
 		HAL_GPIO_WritePin(MOTOR_ON_GPIO_Port,  MOTOR_ON_Pin,GPIO_PIN_RESET);
+		NevolSystem.motor_status = 1;
+	}
 	else
+	{
 		HAL_GPIO_WritePin(MOTOR_ON_GPIO_Port,  MOTOR_ON_Pin,GPIO_PIN_SET);
+		NevolSystem.motor_status = 0;
+	}
 }
 
 void buzzer_timer_callback(void)

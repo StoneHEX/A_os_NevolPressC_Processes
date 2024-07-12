@@ -78,6 +78,11 @@ uint32_t	i;
  * 	example < B 1000 > -> sets buzzer on for 1 Sec.
  * P : get pressure
  * 	example < P > -> reply with hex pressure value
+ * D <prescaler> : set heater timers prescaler
+ * 	example < D 17000 > -> set heater timers prescaler to 17000
+ * 	note : minimum value is 1, maximum value is 65535
+ * S : status , dumps all
+ * 	example < S > -> dumps all variables
  * R : emergency reset
  * 	example < R > -> resets all
  */
@@ -99,16 +104,22 @@ int	p1,p2,p3;
 		return pnum;
 		break;
 	case	2:
-		NevolSystem.command_from_host = toupper(p0);
-		NevolSystem.param1_from_host = p1;
-		NevolSystem.param2_from_host = 0;
-		return pnum;
+		if ( p1 < 65536 )
+		{
+			NevolSystem.command_from_host = toupper(p0);
+			NevolSystem.param1_from_host = p1;
+			NevolSystem.param2_from_host = 0;
+			return pnum;
+		}
 		break;
 	case	3:
-		NevolSystem.command_from_host = toupper(p0);
-		NevolSystem.param1_from_host = p1;
-		NevolSystem.param2_from_host = p2;
-		return pnum;
+		if  (( p1 < 65536 ) && ( p2 < 65536 ))
+		{
+			NevolSystem.command_from_host = toupper(p0);
+			NevolSystem.param1_from_host = p1;
+			NevolSystem.param2_from_host = p2;
+			return pnum;
+		}
 		break;
 	default:	return 0;
 	}
@@ -122,7 +133,7 @@ uint8_t System_Process_host_Commands(void)
 uint8_t		ret_param = 1;
 
 	bzero(NevolSystem.system_tx_buf,USB_BUF_LEN);
-	sprintf((char *)NevolSystem.system_tx_buf,"%c %d %d\n\r",NevolSystem.command_from_host,NevolSystem.param1_from_host,NevolSystem.param2_from_host);
+	sprintf((char *)NevolSystem.system_tx_buf,"<%c %d %d>\n\r",NevolSystem.command_from_host,NevolSystem.param1_from_host,NevolSystem.param2_from_host);
 	NevolSystem.system_tx_buf_len = strlen((char *)NevolSystem.system_tx_buf);
 	switch(NevolSystem.command_from_host)
 	{
@@ -164,8 +175,39 @@ uint8_t		ret_param = 1;
 			ret_param = 0;
 		}
 		break;
-	case	'P':	// reset all, emergency stop
-		sprintf((char *)NevolSystem.system_tx_buf,"< P 0x%04x >\r\n", adc_data);
+	case	'D':	// prescaler set to <param1_from_host>
+		ret_param = 2;
+		heater_prescaler_set(NevolSystem.param1_from_host);
+		ret_param = 0;
+		break;
+	case	'P':	// get pressure
+		sprintf((char *)NevolSystem.system_tx_buf,"< P 0x%04x >\r\n", NevolSystem.adc_data);
+		NevolSystem.system_tx_buf_len = strlen((char *)NevolSystem.system_tx_buf);
+		ret_param = NevolSystem.command_from_host;
+		ret_param = 0;
+		break;
+	case	'S':	// get pressure
+#ifdef SSSS
+		sprintf((char *)NevolSystem.system_tx_buf,"< L 0x%04x >\r\n< M %d >\r\n< H 1 %d >\r\n< H 2 %d >\r\n< H 3 %d >\r\n< H 4 %d >\r\n< H 5 %d >\r\n",
+				NevolSystem.line_status, NevolSystem.motor_status,
+				NevolSystem.htr1_period,
+				NevolSystem.htr2_period,
+				NevolSystem.htr3_period,
+				NevolSystem.htr4_period,
+				NevolSystem.htr5_period
+				);
+#else
+		sprintf((char *)NevolSystem.system_tx_buf,"<0x%04x,%d,%d,%d,%d,%d,%d,0x%04x\r\n",
+				NevolSystem.line_status,
+				NevolSystem.motor_status,
+				NevolSystem.htr1_period,
+				NevolSystem.htr2_period,
+				NevolSystem.htr3_period,
+				NevolSystem.htr4_period,
+				NevolSystem.htr5_period,
+				NevolSystem.adc_data
+				);
+#endif
 		NevolSystem.system_tx_buf_len = strlen((char *)NevolSystem.system_tx_buf);
 		ret_param = NevolSystem.command_from_host;
 		ret_param = 0;

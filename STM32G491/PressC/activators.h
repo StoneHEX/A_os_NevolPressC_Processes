@@ -30,5 +30,6 @@ extern	void line_set(uint8_t line_num , uint8_t line_state);
 extern	void motor_set(uint8_t motor_state);
 extern	void buzzer_set(uint16_t time);
 extern	void buzzer_reset(void);
+extern	void heater_prescaler_set(uint16_t prescaler);
 
 #endif /* STM32G491_PRESSC_ACTIVATORS_H_ */

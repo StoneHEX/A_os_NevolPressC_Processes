@@ -25,7 +25,7 @@
 
 #define		USB_BUF_LEN			60
 #define		RS485_BUF_LEN		USB_BUF_LEN
-#define		RS485_TIMEOUT		1000
+#define		RS485_TIMEOUT		2000
 #define		MAILBOX_ID			0
 #define		MAILBOX_LEN			32
 
@@ -41,13 +41,10 @@ typedef struct
 	uint8_t			usb_tx_buf_len;
 	uint8_t 		usb_flags;
 	/* RS485 from Host section */
-	uint8_t			rs485_rx_buf_rxed[RS485_BUF_LEN];
 	uint8_t			rs485_rx_buf[RS485_BUF_LEN];
 	uint8_t			rs485_rx_buf_len;
-	uint8_t			rs485_rx_buf_index;
 	uint8_t			rs485_tx_buf[RS485_BUF_LEN];
 	uint8_t			rs485_tx_buf_len;
-	uint8_t 		rs485_flags;
 	/* system command and parameters */
 	uint8_t			system_tx_buf[USB_BUF_LEN];
 	uint8_t			system_tx_buf_len;
@@ -55,6 +52,15 @@ typedef struct
 	uint16_t		command_from_host;
 	uint16_t		param1_from_host;
 	uint16_t		param2_from_host;
+	/* system status */
+	uint16_t		line_status;
+	uint8_t			motor_status;
+	uint16_t		htr1_period;
+	uint16_t		htr2_period;
+	uint16_t		htr3_period;
+	uint16_t		htr4_period;
+	uint16_t		htr5_period;
+	uint16_t		adc_data;
 	/* mailbox */
 	uint8_t			mailbox_out[MAILBOX_LEN];
 }NevolSystem_TypeDef;
