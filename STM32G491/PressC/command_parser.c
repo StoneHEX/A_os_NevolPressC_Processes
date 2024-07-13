@@ -67,10 +67,15 @@ uint32_t	i;
  * L <line> 1 | 0 : sets line <line> to the corresponding state
  * 	example < L 2 1 > -> sets line 2 out on
  * 	note : line ranges from 1 to 16 as on the pcb
- * H <number> <duty> : sets  <number> duty to duty
+ * H <heater_number> <duty> : sets  <heater_number> duty to duty
  * 	example < H 1 40 > -> sets heater 1 to 40%
  * 	note : heater ranges from 1 to 5 as on the pcb
  * 	note : duty ranges from 0 to 100
+ * T <heater_number> <temperature> : sets  <number> duty to temperature
+ * 	example < T 1 35 > -> sets heater 1 to 35 degrees
+ * 	note : heater ranges from 1 to 5 as on the pcb
+ * 	note : temperature ranges from 35 to 65 in step of 3 degrees
+ * 	note : setting temperature, e.g. , to 36 falls to 35
  * M 1 | 0 : sets motor to the corresponding state
  * 	example < M 1 > -> sets motor out on
  * B <buzzer time> : sets buzzer on for <buzzer time> time
@@ -79,7 +84,7 @@ uint32_t	i;
  * P : get pressure
  * 	example < P > -> reply with hex pressure value
  * D <prescaler> : set heater timers prescaler
- * 	example < D 17000 > -> set heater timers prescaler to 17000
+ * 	example < D 1700 > -> set heater timers prescaler to 1700
  * 	note : minimum value is 1, maximum value is 65535
  * S : status , dumps all
  * 	example < S > -> dumps all variables
@@ -159,6 +164,17 @@ uint8_t		ret_param = 1;
 			}
 		}
 		break;
+	case	'T':	// set heater temperature
+		ret_param = 2;
+		if ((NevolSystem.param1_from_host < 6) && (NevolSystem.param1_from_host > 0))
+		{
+			if (( NevolSystem.param2_from_host  <= 65) && ( NevolSystem.param2_from_host  >= 35))
+			{
+				temperature_set(NevolSystem.param1_from_host,NevolSystem.param2_from_host);
+				ret_param = 0;
+			}
+		}
+		break;
 	case	'M':	// set motor
 		ret_param = 2;
 		if (NevolSystem.param1_from_host < 2)
@@ -187,16 +203,6 @@ uint8_t		ret_param = 1;
 		ret_param = 0;
 		break;
 	case	'S':	// get pressure
-#ifdef SSSS
-		sprintf((char *)NevolSystem.system_tx_buf,"< L 0x%04x >\r\n< M %d >\r\n< H 1 %d >\r\n< H 2 %d >\r\n< H 3 %d >\r\n< H 4 %d >\r\n< H 5 %d >\r\n",
-				NevolSystem.line_status, NevolSystem.motor_status,
-				NevolSystem.htr1_period,
-				NevolSystem.htr2_period,
-				NevolSystem.htr3_period,
-				NevolSystem.htr4_period,
-				NevolSystem.htr5_period
-				);
-#else
 		sprintf((char *)NevolSystem.system_tx_buf,"<0x%04x,%d,%d,%d,%d,%d,%d,0x%04x\r\n",
 				NevolSystem.line_status,
 				NevolSystem.motor_status,
@@ -207,7 +213,6 @@ uint8_t		ret_param = 1;
 				NevolSystem.htr5_period,
 				NevolSystem.adc_data
 				);
-#endif
 		NevolSystem.system_tx_buf_len = strlen((char *)NevolSystem.system_tx_buf);
 		ret_param = NevolSystem.command_from_host;
 		ret_param = 0;

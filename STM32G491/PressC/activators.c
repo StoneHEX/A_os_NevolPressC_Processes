@@ -121,7 +121,7 @@ uint8_t	i;
 		HAL_GPIO_WritePin(NevolSystemGPIO[i].GPIOx,  NevolSystemGPIO[i].GPIO_Pin,GPIO_PIN_RESET);
 }
 
-#define	CCR_VAL 		10000
+#define	CCR_VAL 		15000
 #define	CCR_VAL_UNIT	(CCR_VAL / 100 )
 
 void heater_set(uint8_t heater_num,uint8_t duty)
@@ -145,6 +145,21 @@ void heater_reset(void)
 void heater_prescaler_set(uint16_t prescaler)
 {
 	TIM2->PSC = TIM3->PSC = prescaler;
+}
+
+uint8_t NevolSystemTemperatureTab[11] =
+{
+	37,39,41,43,45,47,49,51,53,55,57
+};
+
+
+void temperature_set(uint8_t heater_num,uint8_t temperature)
+{
+uint8_t	local_t = temperature;
+	local_t -= 35;
+	local_t /= 3;
+	if ( local_t < 11 )
+		heater_set(heater_num,NevolSystemTemperatureTab[local_t]);
 }
 
 void motor_set(uint8_t motor_state)
