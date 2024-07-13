@@ -87,7 +87,17 @@ uint32_t	i;
  * 	example < D 1700 > -> set heater timers prescaler to 1700
  * 	note : minimum value is 1, maximum value is 65535
  * S : status , dumps all
- * 	example < S > -> dumps all variables
+ * 	example < S > -> dumps all variables excluding temperatures
+ *				line_status,
+				motor_status,
+				htr1_period,
+				htr2_period,
+				htr3_period,
+				htr4_period,
+				htr5_period,
+				adc_data
+ * V : dumps temperature
+ * 	example < V > -> dumps all temperatures
  * R : emergency reset
  * 	example < R > -> resets all
  */
@@ -202,7 +212,7 @@ uint8_t		ret_param = 1;
 		ret_param = NevolSystem.command_from_host;
 		ret_param = 0;
 		break;
-	case	'S':	// get pressure
+	case	'S':	// dump variables
 		sprintf((char *)NevolSystem.system_tx_buf,"<0x%04x,%d,%d,%d,%d,%d,%d,0x%04x\r\n",
 				NevolSystem.line_status,
 				NevolSystem.motor_status,
@@ -212,6 +222,18 @@ uint8_t		ret_param = 1;
 				NevolSystem.htr4_period,
 				NevolSystem.htr5_period,
 				NevolSystem.adc_data
+				);
+		NevolSystem.system_tx_buf_len = strlen((char *)NevolSystem.system_tx_buf);
+		ret_param = NevolSystem.command_from_host;
+		ret_param = 0;
+		break;
+	case	'V':	// dump temperatures
+		sprintf((char *)NevolSystem.system_tx_buf,"<%d,%d,%d,%d,%d>\r\n",
+				NevolSystem.htr1_temperature,
+				NevolSystem.htr2_temperature,
+				NevolSystem.htr3_temperature,
+				NevolSystem.htr4_temperature,
+				NevolSystem.htr5_temperature
 				);
 		NevolSystem.system_tx_buf_len = strlen((char *)NevolSystem.system_tx_buf);
 		ret_param = NevolSystem.command_from_host;

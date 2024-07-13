@@ -60,6 +60,11 @@ typedef struct
 	uint16_t		htr3_period;
 	uint16_t		htr4_period;
 	uint16_t		htr5_period;
+	uint8_t			htr1_temperature;
+	uint8_t			htr2_temperature;
+	uint8_t			htr3_temperature;
+	uint8_t			htr4_temperature;
+	uint8_t			htr5_temperature;
 	uint16_t		adc_data;
 	/* mailbox */
 	uint8_t			mailbox_out[MAILBOX_LEN];

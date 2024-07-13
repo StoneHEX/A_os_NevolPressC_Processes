@@ -157,9 +157,20 @@ void temperature_set(uint8_t heater_num,uint8_t temperature)
 {
 uint8_t	local_t = temperature;
 	local_t -= 35;
-	local_t /= 3;
+	local_t /= 2;
+	local_t -= 1;
 	if ( local_t < 11 )
+	{
 		heater_set(heater_num,NevolSystemTemperatureTab[local_t]);
+		switch(heater_num)
+		{
+		case 1	:	NevolSystem.htr1_temperature = NevolSystemTemperatureTab[local_t]; break;
+		case 2	:	NevolSystem.htr2_temperature = NevolSystemTemperatureTab[local_t]; break;
+		case 3	:	NevolSystem.htr3_temperature = NevolSystemTemperatureTab[local_t]; break;
+		case 4	:	NevolSystem.htr4_temperature = NevolSystemTemperatureTab[local_t]; break;
+		case 5	:	NevolSystem.htr5_temperature = NevolSystemTemperatureTab[local_t]; break;
+		}
+	}
 }
 
 void motor_set(uint8_t motor_state)
